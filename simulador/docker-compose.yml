@@ -1,0 +1,30 @@
+# Sobe broker Mosquitto (com usuário/senha) + simulador da planta.
+# Uso: docker compose up        (broker em localhost:1883, usuário supervilab / senha supervilab123)
+# Para TLS, veja README.md (gera certificados em mosquitto/certs e habilita a porta 8883).
+services:
+  broker:
+    image: eclipse-mosquitto:2
+    ports:
+      - "1883:1883"
+      - "8883:8883"
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto/passwd:/mosquitto/config/passwd:ro
+      - ./mosquitto/certs:/mosquitto/certs:ro
+    healthcheck:
+      test: ["CMD", "mosquitto_sub", "-h", "localhost", "-t", "$$SYS/#", "-C", "1", "-u", "supervilab", "-P", "supervilab123", "-W", "3"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  simulador:
+    build: .
+    depends_on:
+      broker:
+        condition: service_healthy
+    environment:
+      MQTT_HOST: broker
+      MQTT_PORT: "1883"
+      MQTT_USER: supervilab
+      MQTT_SENHA: supervilab123
+    command: ["sh", "-c", "python3 mqtt_sim.py --host $$MQTT_HOST --port $$MQTT_PORT --user $$MQTT_USER --senha $$MQTT_SENHA"]
+    restart: unless-stopped

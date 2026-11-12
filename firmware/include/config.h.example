@@ -1,0 +1,16 @@
+// Copie para include/config.h e preencha. config.h está no .gitignore: nunca suba segredos.
+#pragma once
+#define WIFI_SSID        "minha-rede"
+#define WIFI_SENHA       "minha-senha"
+#define MQTT_HOST        "192.168.0.10"
+#define MQTT_PORTA       8883            // 1883 sem TLS
+#define MQTT_USUARIO     "supervilab"
+#define MQTT_SENHA       "supervilab123"
+#define MQTT_TLS         1               // 0 = sem TLS (só em rede local confiável)
+#define MQTT_CLIENTE_ID  "planta-esp32"
+// Certificado da CA do broker (conteúdo de mosquitto/certs/ca.crt). Necessário com MQTT_TLS=1.
+static const char CA_PEM[] PROGMEM = R"EOF(
+-----BEGIN CERTIFICATE-----
+...cole aqui...
+-----END CERTIFICATE-----
+)EOF";

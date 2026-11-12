@@ -1,0 +1,326 @@
+<title>SuperviLab Simulação</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Manrope:wght@500;600;700&display=swap">
+<style>
+/* Layout: moldura de celular centrada; dentro, as mesmas 5 abas do app Android. Tema único escuro, por identidade do produto. */
+:root{
+  --bg:#0B1016; --s1:#121922; --s2:#1A2430; --s3:#233040; --borda:#2A3747;
+  --texto:#E8EEF5; --fraco:#94A3B8; --mfraco:#5B6B80;
+  --tanque:#2DD4BF; --valvula:#F59E0B; --bomba:#38BDF8; --ok:#34D399; --alerta:#FB7185; --aviso:#FBBF24; --desc:#64748B;
+  --fd:"Sora",system-ui,sans-serif; --ft:"Manrope",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--texto);font-family:var(--ft);padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));min-height:100%}
+.moldura{max-width:430px;margin:0 auto;background:var(--bg);border:1px solid var(--borda);border-radius:28px;overflow:hidden;position:relative;min-height:760px;display:flex;flex-direction:column}
+@media (max-width:460px){.moldura{border:0;border-radius:0;min-height:calc(100vh - 32px)}}
+.tela{flex:1;padding:16px 16px 100px;display:none;gap:12px;flex-direction:column}
+.tela.ativa{display:flex}
+.cab{display:flex;align-items:center;justify-content:space-between;padding-top:6px}
+.cab .marca{font:700 11px var(--ft);letter-spacing:1.2px;color:var(--tanque);text-transform:uppercase}
+.cab h1{font:700 24px/30px var(--fd);margin:0;text-wrap:balance}
+.status{display:flex;align-items:center;gap:6px;font:600 12px var(--ft);color:var(--fraco)}
+.ponto{width:8px;height:8px;border-radius:50%;background:var(--desc);display:inline-block;flex:none}
+.cartao{background:var(--s1);border:1px solid var(--borda);border-radius:20px;padding:16px}
+.cartao.ativo{border-color:color-mix(in srgb,var(--cor) 55%,transparent);background:color-mix(in srgb,var(--cor) 8%,var(--s1))}
+.rotulo{font:700 11px var(--ft);letter-spacing:1.2px;text-transform:uppercase;color:var(--fraco)}
+.legenda{font:600 12px/15px var(--ft);color:var(--fraco)}
+.numero{font:700 34px/38px var(--fd);font-variant-numeric:tabular-nums}
+.linha{display:flex;align-items:center;gap:12px;padding:6px 0;cursor:pointer;border-radius:10px}
+.linha:hover{background:var(--s2)}
+.linha .nome{font:500 15px/21px var(--ft)}
+.pilula{font:600 12px var(--ft);padding:4px 10px;border-radius:999px;background:color-mix(in srgb,var(--cor) 14%,transparent);color:var(--cor);white-space:nowrap}
+.faixa{display:flex;gap:10px;align-items:flex-start;border-radius:12px;padding:10px 14px;border:1px solid color-mix(in srgb,var(--cor) 50%,transparent);background:color-mix(in srgb,var(--cor) 14%,transparent);color:var(--cor);font:500 15px/21px var(--ft)}
+.faixa small{display:block;color:var(--fraco);font-size:14px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.kpis .cartao{padding:12px;min-width:0;overflow:hidden}
+.kpis .numero{font-size:24px;line-height:30px}
+.kpis .rotulo{font-size:10px;letter-spacing:.8px}
+.botao{font:700 15px var(--ft);border:0;border-radius:14px;padding:13px 18px;cursor:pointer;background:var(--cor);color:var(--bg);flex:1;min-width:0}
+.botao.sec{background:color-mix(in srgb,var(--cor) 14%,transparent);color:var(--cor);border:1px solid color-mix(in srgb,var(--cor) 40%,transparent)}
+.botao:disabled{background:var(--s2);color:var(--mfraco);border-color:transparent;cursor:not-allowed}
+.botao:focus-visible,.aba:focus-visible,.chip:focus-visible{outline:2px solid var(--tanque);outline-offset:2px}
+.botoes{display:flex;gap:12px;flex-wrap:wrap}
+.barra{position:absolute;left:0;right:0;bottom:0;padding:0 16px calc(12px + env(safe-area-inset-bottom,0px));background:linear-gradient(transparent,var(--bg) 40%)}
+.barra nav{display:flex;background:color-mix(in srgb,var(--s2) 96%,transparent);border:1px solid var(--borda);border-radius:20px;padding:6px}
+.aba{flex:1;background:none;border:0;border-radius:12px;padding:8px 2px;cursor:pointer;color:var(--fraco);font:700 9px var(--ft);letter-spacing:.3px;text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative}
+.aba svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.aba.ativa{background:var(--s3);color:var(--tanque)}
+.aba .badge{position:absolute;top:4px;right:calc(50% - 18px);background:var(--alerta);color:var(--bg);font-size:8px;border-radius:50%;width:14px;height:14px;display:grid;place-items:center}
+.chip{font:600 12px var(--ft);border:0;border-radius:12px;padding:8px 14px;background:var(--s2);color:var(--fraco);cursor:pointer}
+.chip.sel{background:var(--tanque);color:var(--bg)}
+.dialogo{position:absolute;inset:0;background:rgba(5,8,12,.7);display:none;align-items:center;justify-content:center;padding:24px;z-index:5}
+.dialogo.aberto{display:flex}
+.dialogo .caixa{background:var(--s2);border:1px solid var(--borda);border-radius:20px;padding:20px;width:100%;max-width:340px}
+.dialogo h2{font:600 17px/22px var(--fd);margin:0 0 8px}
+.dialogo p{color:var(--fraco);margin:0 0 16px;font-size:15px}
+.diag{width:100%;display:block;height:auto;aspect-ratio:1.6;touch-action:manipulation}
+.alarme{display:flex;gap:12px;align-items:center}
+.alarme .t{font:600 17px/22px var(--fd)}
+.alarme .m{color:var(--fraco);font-size:14px}
+canvas{max-width:100%}
+.toast{position:absolute;left:16px;right:16px;bottom:96px;background:var(--s3);border:1px solid var(--borda);border-radius:12px;padding:10px 14px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:4}
+.toast.vis{opacity:1}
+.nota{font-size:12px;color:var(--mfraco);text-align:center;margin-top:10px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="moldura" id="moldura">
+  <!-- PAINEL -->
+  <section class="tela ativa" id="tela-painel">
+    <div class="cab"><div><div class="marca">SuperviLab</div><h1>Painel</h1></div><div class="status"><span class="ponto" id="st-ponto"></span><span id="st-txt">Demo ao vivo</span></div></div>
+    <div id="faixa-painel"></div>
+    <div class="cartao"><div style="display:flex;justify-content:space-between;align-items:center"><span class="rotulo">Planta</span><span class="legenda">Toque num equipamento</span></div>
+      <canvas class="diag" id="diag" width="760" height="475" aria-label="Diagrama da planta"></canvas></div>
+    <div class="kpis">
+      <div class="cartao" id="kpi1" style="--cor:var(--tanque)"><div class="rotulo">Tanque 1</div><div class="numero" id="kpi1v">--</div><div class="legenda" id="kpi1l"></div></div>
+      <div class="cartao" id="kpi2" style="--cor:var(--tanque)"><div class="rotulo">Tanque 2</div><div class="numero" id="kpi2v">--</div><div class="legenda" id="kpi2l"></div></div>
+      <div class="cartao" id="kpi3" style="--cor:var(--alerta);cursor:pointer" data-aba="alarmes"><div class="rotulo">Alarmes</div><div class="numero" id="kpi3v">0</div><div class="legenda">ativos</div></div>
+    </div>
+    <div class="cartao"><div class="rotulo">Equipamentos</div><div id="lista-equip" style="margin-top:8px"></div></div>
+    <div class="cartao" id="card-cmds" hidden><div class="rotulo">Últimos comandos</div><div id="lista-cmds" style="margin-top:8px"></div></div>
+  </section>
+
+  <!-- EQUIPAMENTOS / DETALHE -->
+  <section class="tela" id="tela-equip">
+    <div class="cab"><div><div class="marca">SuperviLab</div><h1>Equipamentos</h1></div></div>
+    <div id="faixa-equip"></div>
+    <div id="cards-equip" style="display:flex;flex-direction:column;gap:12px"></div>
+  </section>
+  <section class="tela" id="tela-detalhe">
+    <div class="cab"><div style="display:flex;align-items:center;gap:10px"><button class="chip" id="voltar" aria-label="Voltar">←</button><div><div class="marca" id="det-tipo">Válvula</div><h1 id="det-nome">Válvula 1</h1></div></div></div>
+    <div id="faixa-det"></div>
+    <div class="cartao" id="det-estado"></div>
+    <div class="cartao" id="det-cmds"></div>
+    <div class="cartao" id="det-hist" hidden><div class="rotulo">Histórico de comandos</div><div id="det-hist-lista" style="margin-top:8px"></div></div>
+  </section>
+
+  <!-- ALARMES -->
+  <section class="tela" id="tela-alarmes">
+    <div class="cab"><div><div class="marca">SuperviLab</div><h1>Alarmes</h1></div></div>
+    <div style="display:flex;align-items:center;gap:12px"><div style="flex:1"><div class="numero" id="al-n">0</div><div class="legenda" id="al-l">nenhum alarme ativo</div></div><button class="botao sec" style="flex:none;--cor:var(--alerta)" id="rec-todos">Reconhecer todos</button></div>
+    <div id="lista-alarmes" style="display:flex;flex-direction:column;gap:12px"></div>
+  </section>
+
+  <!-- HISTÓRICO -->
+  <section class="tela" id="tela-hist">
+    <div class="cab"><div><div class="marca">SuperviLab</div><h1>Histórico</h1></div></div>
+    <div style="display:flex;gap:8px" id="janelas"><button class="chip" data-min="2">2 min</button><button class="chip" data-min="5">5 min</button><button class="chip sel" data-min="10">10 min</button></div>
+    <div class="cartao"><div style="display:flex;justify-content:space-between;align-items:center"><span class="rotulo">Nível dos tanques</span><span class="legenda"><span class="ponto" style="background:var(--tanque)"></span> Tanque 1 &nbsp; <span class="ponto" style="background:var(--bomba)"></span> Tanque 2</span></div>
+      <canvas id="grafico" width="760" height="480" style="width:100%;height:auto;margin-top:12px" aria-label="Gráfico de nível"></canvas>
+      <div class="legenda" style="margin-top:8px">Tracejado: limites de alarme (10 % e 90 %). Lacunas = sem dados.</div></div>
+  </section>
+
+  <!-- FALHAS / AJUSTES -->
+  <section class="tela" id="tela-ajustes">
+    <div class="cab"><div><div class="marca">SuperviLab</div><h1>Ajustes</h1></div></div>
+    <div class="cartao ativo" style="--cor:var(--tanque)"><div style="font:600 17px var(--fd)">Modo demo</div><div class="legenda" style="margin-top:4px">Esta página roda a mesma simulação do app, no navegador. O app Android também conecta a um broker MQTT real (TLS, usuário e senha).</div></div>
+    <div class="cartao"><div class="rotulo">Simular falhas</div><div class="legenda" style="margin:4px 0 10px">Teste os alarmes do supervisório.</div>
+      <div class="botoes" id="falhas">
+        <button class="botao sec" style="--cor:var(--alerta)" data-f="sensor_travado" data-a="1">Sensor travado T1</button>
+        <button class="botao sec" style="--cor:var(--alerta)" data-f="sensor_invalido" data-a="2">Sensor inválido T2</button>
+        <button class="botao sec" style="--cor:var(--alerta)" data-f="valvula_sem_resposta" data-a="2">Válvula 2 sem resposta</button>
+        <button class="botao sec" style="--cor:var(--alerta)" data-f="perda_conexao">Queda de rede 10 s</button>
+      </div></div>
+    <div class="cartao"><div class="rotulo">Diagnóstico</div><div id="diagn" class="legenda" style="margin-top:8px;font-family:ui-monospace,monospace;font-size:11px;line-height:16px"></div></div>
+    <div class="cartao"><div class="rotulo">Sobre</div><div style="font:600 17px var(--fd);margin-top:6px">SuperviLab 1.0.0, simulação web</div>
+      <div class="legenda" style="margin-top:8px;color:var(--aviso)">⚠ Segurança: o sistema real só deve ser usado em equipamento com proteção física independente (botão de emergência, válvula de alívio), nunca apenas pelo app.</div></div>
+  </section>
+
+  <div class="barra"><nav id="nav">
+    <button class="aba ativa" data-aba="painel"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Painel</button>
+    <button class="aba" data-aba="equip"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Equipamentos</button>
+    <button class="aba" data-aba="alarmes"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/></svg>Alarmes<span class="badge" id="badge" hidden>0</span></button>
+    <button class="aba" data-aba="hist"><svg viewBox="0 0 24 24"><path d="M3 20h18M4 16l5-6 4 3 7-8"/></svg>Histórico</button>
+    <button class="aba" data-aba="ajustes"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.5-2.4 1a7 7 0 0 0-1.7-1L14.5 3h-5l-.3 2.6a7 7 0 0 0-1.7 1l-2.4-1-2 3.5 2 1.5a7 7 0 0 0 0 2l-2 1.5 2 3.5 2.4-1a7 7 0 0 0 1.7 1l.3 2.6h5l.3-2.6a7 7 0 0 0 1.7-1l2.4 1 2-3.5-2-1.5c.1-.3.1-.7.1-1z"/></svg>Ajustes</button>
+  </nav></div>
+
+  <div class="dialogo" id="dialogo" role="dialog" aria-modal="true"><div class="caixa"><h2 id="dlg-t"></h2><p id="dlg-m"></p><div class="botoes"><button class="botao sec" style="--cor:var(--fraco)" id="dlg-nao">Cancelar</button><button class="botao" id="dlg-sim">Confirmar</button></div></div></div>
+  <div class="toast" id="toast"></div>
+</div>
+<div class="nota">Simulação da planta SuperviLab. O APK Android e o firmware ESP32 estão no repositório do projeto.</div>
+
+<script>
+// ===== simulação (mesma física do simulador Python / ConexaoDemo) =====
+const CAP=1000, QB=60, QR=30, QD=40, CURSO=3;
+const planta={
+  v:{1:{e:'aberta',alvo:'aberta',rest:0,semResp:false},2:{e:'fechada',alvo:'fechada',rest:0,semResp:false},3:{e:'fechada',alvo:'fechada',rest:0,semResp:false}},
+  t:{1:{vol:640,trav:false,inv:false,travVal:null},2:{vol:260,trav:false,inv:false,travVal:null}},
+  bomba:'ligada', seguro:false, falhas:new Set()
+};
+const app={viva:true, conectado:true, hb:Date.now(), caidoAte:0, alarmes:[], cmds:[], hist:{1:[],2:[]}, diag:[], aba:'painel', det:null, janela:10, pendente:null, idAl:1, ultMud:{}};
+const NOMES={'valvula/1':'Válvula 1','valvula/2':'Válvula 2','valvula/3':'Válvula 3','bomba/1':'Bomba','tanque/1':'Tanque 1','tanque/2':'Tanque 2'};
+const DESCR={'valvula/1':'Saída da bomba para o Tanque 2','valvula/2':'Dreno do Tanque 2','valvula/3':'Alimentação do Tanque 1 (rede)','bomba/1':'Transfere do Tanque 1 para o Tanque 2','tanque/1':'IBC 1000 L, fonte','tanque/2':'IBC 1000 L, destino'};
+const pct=n=>Math.round(1000*planta.t[n].vol/CAP)/10;
+function leitura(n){const t=planta.t[n]; if(t.inv) return null; if(t.trav){ if(t.travVal==null) t.travVal=pct(n); return t.travVal;} t.travVal=null; return pct(n);}
+function diagLog(s){app.diag.unshift(hora(Date.now())+'  '+s); app.diag=app.diag.slice(0,40);}
+const hora=ts=>new Date(ts).toTimeString().slice(0,8);
+const fmt=v=>v==null?'?':(Number.isInteger(v)?v:v.toFixed(1).replace('.',','));
+
+// histórico sintético inicial (10 min)
+(()=>{const t=Date.now(); for(let i=600;i>0;i--){app.hist[1].push({ts:t-i*1000,p:64+6*Math.sin(i/90)+(i/600)*8}); app.hist[2].push({ts:t-i*1000,p:26-5*Math.sin(i/70)-(i/600)*9});}})();
+
+function comandarValvula(n,cmd){const v=planta.v[n]; if(planta.seguro) return [false,'o equipamento está em modo seguro']; if(v.semResp) return [null,'sem_resposta'];
+  const novo=cmd==='abrir'?'aberta':'fechada'; if(v.e===novo&&v.alvo===novo) return [true,'já estava nesse estado']; v.alvo=novo; v.e=cmd==='abrir'?'abrindo':'fechando'; v.rest=CURSO; return [true,''];}
+function comandarBomba(cmd){ if(planta.seguro) return [false,'o equipamento está em modo seguro'];
+  if(cmd==='ligar'){ if(planta.v[1].e!=='aberta') return [false,'a válvula 1 precisa estar aberta']; if(pct(1)<2) return [false,'o Tanque 1 está vazio']; planta.bomba='ligada'; return [true,''];}
+  planta.bomba='desligada'; return [true,''];}
+function entrarSeguro(){ if(planta.seguro) return; planta.seguro=true; planta.bomba='desligada'; for(const v of Object.values(planta.v)){ if(v.e!=='fechada'){v.alvo='fechada'; v.e='fechando'; v.rest=CURSO;} } diagLog('planta entrou em MODO SEGURO');}
+
+let ultimo=Date.now();
+function passo(){
+  const agora=Date.now(), dt=Math.min(0.5,(agora-ultimo)/1000); ultimo=agora;
+  for(const [n,v] of Object.entries(planta.v)){ if(v.e==='abrindo'||v.e==='fechando'){ v.rest-=dt; if(v.rest<=0){ v.e=v.alvo; concluir('valvula/'+n,v.e); } } }
+  const t1=planta.t[1],t2=planta.t[2];
+  if(planta.v[3].e==='aberta') t1.vol+=QR/60*dt;
+  if(planta.bomba==='ligada'){ if(planta.v[1].e!=='aberta'||pct(1)<2){ planta.bomba='desligada'; diagLog('bomba desligada por intertravamento'); } else { const q=Math.min(QB/60*dt,t1.vol); t1.vol-=q; t2.vol+=q; } }
+  if(planta.v[2].e==='aberta') t2.vol-=Math.min(QD/60*dt,t2.vol);
+  for(const t of [t1,t2]) t.vol=Math.max(0,Math.min(CAP,t.vol));
+  if((t1.inv||t2.inv)) entrarSeguro();
+  if(planta.bomba==='desligada') concluir('bomba/1','desligada'); if(planta.bomba==='ligada') concluir('bomba/1','ligada');
+  // conexão simulada
+  if(app.caidoAte&&agora>=app.caidoAte){ app.caidoAte=0; app.conectado=true; planta.seguro=false; diagLog('conexão restabelecida'); }
+  if(app.conectado) app.hb=agora;
+  app.viva=app.conectado&&(agora-app.hb)<6000;
+  // histórico 1 Hz
+  if(app.viva&&(!app.ultHist||agora-app.ultHist>=1000)){ app.ultHist=agora; for(const n of [1,2]){ const p=leitura(n); if(p!=null){ app.hist[n].push({ts:agora,p}); if(app.hist[n].length>900) app.hist[n].shift(); const u=app.ultMud[n]; if(!u||u.p!==p) app.ultMud[n]={p,ts:agora}; } } }
+  timeouts(agora); alarmes(agora); render();
+}
+// ===== comandos com tempo limite =====
+function comandar(id,cmd){
+  if(!app.conectado){ toast('Sem conexão com o broker: comando não enviado'); return; }
+  const reg={id:Math.random().toString(16).slice(2,10),eq:id,cmd,ts:Date.now(),status:'Enviado',det:'',ack:null,fim:null}; app.cmds.unshift(reg); app.cmds=app.cmds.slice(0,30);
+  diagLog('→ '+id+' '+cmd);
+  setTimeout(()=>{ // ack simulado (~20 ms)
+    let r; if(id.startsWith('valvula')) r=comandarValvula(+id.split('/')[1],cmd); else r=comandarBomba(cmd);
+    if(r[0]===null) return; // sem resposta
+    reg.ack=Date.now()-reg.ts;
+    if(r[0]){ reg.status=r[1]?'Concluído':'Aceito'; reg.det=r[1]; if(r[1]) reg.fim=reg.ack; } else { reg.status='Recusado'; reg.det=r[1]; }
+    diagLog('← '+(r[0]?'ack ok':'recusado')+' '+id+' em '+reg.ack+' ms'+(r[1]?' ('+r[1]+')':''));
+  },20);
+}
+function concluir(eq,estado){ const alvo={abrir:'aberta',fechar:'fechada',ligar:'ligada',desligar:'desligada'}; for(const c of app.cmds){ if(c.eq===eq&&(c.status==='Enviado'||c.status==='Aceito')&&alvo[c.cmd]===estado){ c.status='Concluído'; c.fim=Date.now()-c.ts; } } }
+function timeouts(agora){ for(const c of app.cmds){ if(c.status==='Enviado'&&agora-c.ts>1500){ c.status='Sem resposta'; c.det='sem confirmação em 1,5 s'; diagLog('⚠ '+c.eq+' '+c.cmd+' sem resposta'); if(app.viva) ativar(c.eq.startsWith('bomba')?'Bomba sem resposta':'Válvula sem resposta',c.eq,NOMES[c.eq]+' não respondeu ao comando "'+c.cmd+'"',true); }
+  if(c.status==='Aceito'&&agora-c.ts>8000){ c.status='Sem resposta'; c.det='não chegou ao estado final em 8 s'; } } }
+// ===== alarmes =====
+function ativar(tipo,eq,msg,crit){ if(app.alarmes.some(a=>!a.fim&&a.tipo===tipo&&a.eq===eq)) return; app.alarmes.unshift({id:app.idAl++,tipo,eq,msg,crit,ini:Date.now(),fim:null,rec:false}); diagLog('ALARME '+tipo+(eq?' ('+NOMES[eq]+')':'')); }
+function desativar(tipo,eq){ for(const a of app.alarmes) if(!a.fim&&a.tipo===tipo&&a.eq===eq){ a.fim=Date.now(); diagLog('normalizado: '+tipo); } }
+const ativo=(tipo,eq)=>app.alarmes.some(a=>!a.fim&&a.tipo===tipo&&a.eq===eq);
+function alarmes(agora){
+  if(!app.viva) ativar('Conexão perdida',null,app.conectado?'Conectado ao broker, mas o equipamento não envia sinal de vida':'Sem conexão com o broker',true); else desativar('Conexão perdida',null);
+  if(app.viva&&planta.seguro) ativar('Equipamento em modo seguro',null,'Válvulas fechadas e bomba desligada pelo próprio equipamento',true); else desativar('Equipamento em modo seguro',null);
+  for(const n of [1,2]){ const eq='tanque/'+n; const inv=planta.t[n].inv; const p=app.viva&&!inv?leitura(n):null;
+    if(app.viva&&inv) ativar('Sensor de nível sem leitura',eq,NOMES[eq]+': sensor sem leitura',true); else desativar('Sensor de nível sem leitura',eq);
+    if(p!=null){ if(p>=90) ativar('Nível alto',eq,NOMES[eq]+' em '+fmt(p)+' % (limite 90 %)',true); else if(ativo('Nível alto',eq)&&p<88) desativar('Nível alto',eq);
+      if(p<=10) ativar('Nível baixo',eq,NOMES[eq]+' em '+fmt(p)+' % (limite 10 %)',false); else if(ativo('Nível baixo',eq)&&p>12) desativar('Nível baixo',eq);
+      const fluxo=n===1?(planta.bomba==='ligada'||planta.v[3].e==='aberta'):(planta.bomba==='ligada'||planta.v[2].e==='aberta'); const u=app.ultMud[n];
+      if(fluxo&&u&&agora-u.ts>20000&&p>0.5&&p<99.5) ativar('Sensor de nível possivelmente travado',eq,NOMES[eq]+': leitura parada em '+fmt(p)+' % apesar do fluxo',false); else desativar('Sensor de nível possivelmente travado',eq);
+    } else { desativar('Nível alto',eq); desativar('Nível baixo',eq); desativar('Sensor de nível possivelmente travado',eq); } }
+  for(const n of [1,2,3]){ const v=planta.v[n]; if(!v.semResp&&(v.e==='aberta'||v.e==='fechada')&&app.cmds.some(c=>c.eq==='valvula/'+n&&(c.status==='Aceito'||c.status==='Concluído')&&Date.now()-c.ts<3000)) desativar('Válvula sem resposta','valvula/'+n); }
+}
+// ===== falhas =====
+function falha(tipo,alvo){ const chave=tipo+':'+(alvo||'');
+  if(tipo==='perda_conexao'){ app.caidoAte=Date.now()+10000; app.conectado=false; diagLog('queda de rede simulada (10 s)'); setTimeout(()=>{ if(!app.conectado&&app.caidoAte){} },0); toast('Queda de rede simulada por 10 s'); return; }
+  const liga=!planta.falhas.has(chave); if(liga) planta.falhas.add(chave); else planta.falhas.delete(chave);
+  if(tipo==='sensor_travado') planta.t[alvo].trav=liga; if(tipo==='sensor_invalido'){ planta.t[alvo].inv=liga; if(!liga) planta.seguro=false; } if(tipo==='valvula_sem_resposta') planta.v[alvo].semResp=liga;
+  diagLog('falha '+tipo+' '+(liga?'ativada':'desativada')); toast((liga?'Falha ativada: ':'Falha desativada: ')+tipo.replace(/_/g,' '));
+}
+// ===== UI =====
+const $=s=>document.querySelector(s);
+function corValv(e){ return e==null?'var(--desc)':e==='aberta'?'var(--valvula)':e==='fechada'?'var(--fraco)':e==='falha'?'var(--alerta)':'var(--aviso)'; }
+function corBomba(e){ return e==null?'var(--desc)':e==='ligada'?'var(--bomba)':'var(--fraco)'; }
+function corNivel(p){ return p==null?'var(--desc)':(p>=90||p<=10)?'var(--alerta)':(p>=85||p<=15)?'var(--aviso)':'var(--tanque)'; }
+const rot={aberta:'Aberta',fechada:'Fechada',abrindo:'Abrindo…',fechando:'Fechando…',ligada:'Ligada',desligada:'Desligada'};
+const vis=()=>app.viva; // quando não viva, tudo é desconhecido
+function estadoDe(id){ if(!vis()) return null; if(id.startsWith('valvula')) return planta.v[+id.split('/')[1]].e; if(id.startsWith('bomba')) return planta.bomba; return leitura(+id.split('/')[1]); }
+function faixa(){ if(!app.conectado) return `<div class="faixa" style="--cor:var(--alerta)"><span class="ponto" style="background:var(--alerta)"></span><div>Reconectando…<small>Queda de rede simulada. Estados marcados como desconhecidos.</small></div></div>`;
+  if(!app.viva) return `<div class="faixa" style="--cor:var(--alerta)"><span class="ponto" style="background:var(--alerta)"></span><div>Equipamento sem sinal de vida<small>Sem heartbeat há mais de 6 s.</small></div></div>`;
+  if(planta.seguro) return `<div class="faixa" style="--cor:var(--aviso)"><span class="ponto" style="background:var(--aviso)"></span><div>Equipamento em modo seguro<small>Válvulas fechadas e bomba desligada pelo próprio equipamento.</small></div></div>`; return ''; }
+function pilulaEstado(id){ const e=estadoDe(id); const pend=app.cmds.some(c=>c.eq===id&&(c.status==='Enviado'||c.status==='Aceito'));
+  if(pend) return `<span class="pilula" style="--cor:var(--aviso)">Enviando…</span>`; const cor=id.startsWith('valvula')?corValv(e):id.startsWith('bomba')?corBomba(e):corNivel(e); const txt=e==null?'Desconhecido':(id.startsWith('tanque')?fmt(e)+' %':rot[e]); return `<span class="pilula" style="--cor:${cor}">${txt}</span>`; }
+let ultimoRender=0;
+function render(){ const agora=Date.now(); if(agora-ultimoRender<200){ desenharDiagrama(); return; } ultimoRender=agora;
+  const nAt=app.alarmes.filter(a=>!a.fim).length, nNr=app.alarmes.filter(a=>!a.fim&&!a.rec).length;
+  const [stT,stC]=!app.conectado?['Reconectando…','var(--aviso)']:!app.viva?['Sem sinal','var(--alerta)']:planta.seguro?['Modo seguro','var(--aviso)']:['Demo ao vivo','var(--ok)'];
+  $('#st-txt').textContent=stT; $('#st-ponto').style.background=stC;
+  const f=faixa(); for(const id of ['faixa-painel','faixa-equip','faixa-det']) document.getElementById(id).innerHTML=f;
+  for(const n of [1,2]){ const p=vis()?leitura(n):null; $('#kpi'+n+'v').textContent=p==null?'?':fmt(p)+'%'; $('#kpi'+n+'v').style.color=corNivel(p); $('#kpi'+n+'l').textContent=p==null?'Desconhecido':Math.round(p*10)+' L'; $('#kpi'+n).classList.toggle('ativo',p!=null); }
+  $('#kpi3v').textContent=nAt; $('#kpi3v').style.color=nAt?'var(--alerta)':'var(--ok)'; $('#kpi3').classList.toggle('ativo',nAt>0);
+  $('#badge').hidden=!nNr; $('#badge').textContent=nNr>9?'9+':nNr;
+  $('#lista-equip').innerHTML=['valvula/3','bomba/1','valvula/1','valvula/2'].map(id=>{const e=estadoDe(id); const cor=id.startsWith('valvula')?corValv(e):corBomba(e); return `<div class="linha" data-det="${id}"><span class="ponto" style="background:${cor};width:10px;height:10px"></span><div style="flex:1"><div class="nome">${NOMES[id]}</div><div class="legenda">${DESCR[id]}</div></div>${pilulaEstado(id)}</div>`;}).join('');
+  $('#card-cmds').hidden=!app.cmds.length; $('#lista-cmds').innerHTML=app.cmds.slice(0,4).map(linhaCmd).join('');
+  if(app.aba==='equip') $('#cards-equip').innerHTML=['tanque/1','valvula/3','bomba/1','valvula/1','tanque/2','valvula/2'].map(id=>{const e=estadoDe(id); const tipo=id.split('/')[0]; const corT=tipo==='tanque'?'var(--tanque)':tipo==='bomba'?'var(--bomba)':'var(--valvula)'; const cor=tipo==='valvula'?corValv(e):tipo==='bomba'?corBomba(e):corNivel(e); const at=tipo==='tanque'?e!=null:tipo==='bomba'?e==='ligada':e==='aberta'; const nal=app.alarmes.filter(a=>!a.fim&&a.eq===id).length;
+    return `<div class="cartao ${at?'ativo':''}" style="--cor:${corT};cursor:pointer" data-det="${id}"><div style="display:flex;gap:12px;align-items:center"><span class="ponto" style="background:${cor};width:12px;height:12px"></span><div style="flex:1;min-width:0"><div class="rotulo" style="color:${corT}">${tipo}</div><div style="font:600 17px var(--fd)">${NOMES[id]}</div><div class="legenda">${DESCR[id]}</div></div><div style="text-align:right"><div style="font:600 15px var(--fd);color:${cor}">${e==null?'Desconhecido':tipo==='tanque'?fmt(e)+' %':rot[e]}</div>${nal?`<span class="pilula" style="--cor:var(--alerta)">${nal} alarme${nal>1?'s':''}</span>`:''}</div></div></div>`;}).join('');
+  if(app.aba==='detalhe') renderDetalhe();
+  if(app.aba==='alarmes'){ $('#al-n').textContent=nAt; $('#al-n').style.color=nAt?'var(--alerta)':'var(--ok)'; $('#al-l').textContent=nAt?nNr+' sem reconhecer':'nenhum alarme ativo'; $('#rec-todos').disabled=!nNr;
+    const at=app.alarmes.filter(a=>!a.fim), hi=app.alarmes.filter(a=>a.fim);
+    $('#lista-alarmes').innerHTML=(at.length?`<div class="rotulo">Ativos</div>`:'')+at.map(cardAlarme).join('')+(hi.length?`<div class="rotulo">Histórico</div>`:'')+hi.slice(0,10).map(cardAlarme).join('')+(!at.length&&!hi.length?`<div class="cartao"><div style="font:600 17px var(--fd);color:var(--ok)">Tudo normal</div><div class="legenda" style="margin-top:4px">Alarmes locais: nível alto (≥ 90 %) e baixo (≤ 10 %), válvula ou bomba sem resposta, sensor sem leitura ou travado, modo seguro e conexão perdida.</div></div>`:''); }
+  if(app.aba==='hist') desenharGrafico();
+  if(app.aba==='ajustes'){ $('#diagn').innerHTML=app.diag.slice(0,12).map(s=>`<div style="color:${/ALARME|⚠/.test(s)?'var(--alerta)':'var(--fraco)'}">${s}</div>`).join('')||'Sem eventos ainda.'; document.querySelectorAll('#falhas .botao').forEach(b=>{const on=planta.falhas.has(b.dataset.f+':'+(b.dataset.a||'')); b.classList.toggle('sec',!on); b.textContent=(on?'✓ ':'')+b.textContent.replace(/^✓ /,'');}); }
+  desenharDiagrama();
+}
+function linhaCmd(c){ const cor=(c.status==='Concluído'||c.status==='Aceito')?'var(--ok)':c.status==='Enviado'?'var(--aviso)':'var(--alerta)'; return `<div class="linha" style="cursor:default"><div style="flex:1;min-width:0"><div class="nome">${NOMES[c.eq]}: ${c.cmd}</div><div class="legenda">${hora(c.ts)}${c.ack!=null?' · ack '+c.ack+' ms':''}${c.fim!=null?' · concluído em '+(c.fim/1000).toFixed(1).replace('.',',')+' s':''}${c.det?' · '+c.det:''}</div></div><span class="pilula" style="--cor:${cor}">${c.status}</span></div>`; }
+function cardAlarme(a){ const cor=a.fim?'var(--fraco)':a.crit?'var(--alerta)':'var(--aviso)'; return `<div class="cartao ${!a.fim&&!a.rec?'ativo':''}" style="--cor:${cor}"><div class="alarme"><span class="ponto" style="background:${cor};width:12px;height:12px"></span><div style="flex:1;min-width:0"><div class="t" style="color:${a.fim?'var(--fraco)':'var(--texto)'}">${a.tipo}</div><div class="m">${a.msg}</div><div class="legenda">Início ${hora(a.ini)}${a.fim?' · fim '+hora(a.fim):''}${a.rec?' · reconhecido':''}</div></div>${a.fim?`<span class="pilula" style="--cor:var(--ok)">Normalizado</span>`:a.rec?`<span class="pilula" style="--cor:${cor}">Ativo</span>`:`<button class="botao sec" style="flex:none;--cor:${cor};padding:8px 14px" data-rec="${a.id}">OK</button>`}</div></div>`; }
+function renderDetalhe(){ const id=app.det; if(!id) return; const tipo=id.split('/')[0]; const e=estadoDe(id); $('#det-tipo').textContent=tipo; $('#det-nome').textContent=NOMES[id];
+  const corT=tipo==='tanque'?'var(--tanque)':tipo==='bomba'?'var(--bomba)':'var(--valvula)'; const cor=tipo==='valvula'?corValv(e):tipo==='bomba'?corBomba(e):corNivel(e);
+  $('#det-estado').style.setProperty('--cor',corT); $('#det-estado').classList.toggle('ativo',app.viva);
+  $('#det-estado').innerHTML=`<div class="rotulo">Estado atual</div><div class="numero" style="color:${cor};margin-top:8px">${e==null?'?':tipo==='tanque'?fmt(e)+'%':rot[e]}</div><div class="legenda">${e==null?'Desconhecido':tipo==='tanque'?Math.round(e*10)+' L de 1000 L':DESCR[id]}</div>${tipo==='tanque'&&e!=null?`<div style="height:14px;border-radius:7px;background:var(--s3);margin-top:10px;position:relative;overflow:hidden"><div style="height:100%;width:${e}%;background:${cor};border-radius:7px"></div><div style="position:absolute;top:0;bottom:0;left:10%;width:2px;background:var(--alerta)"></div><div style="position:absolute;top:0;bottom:0;left:90%;width:2px;background:var(--alerta)"></div></div>`:''}${!app.viva?`<div class="legenda" style="color:var(--alerta);margin-top:8px">Sem conexão com o equipamento: o último valor conhecido não é mostrado como atual.</div>`:''}`;
+  if(tipo==='tanque'){ $('#det-cmds').hidden=true; } else { $('#det-cmds').hidden=false; const [a,b]=tipo==='valvula'?['abrir','fechar']:['ligar','desligar']; const cap=s=>s[0].toUpperCase()+s.slice(1);
+    $('#det-cmds').innerHTML=`<div class="rotulo">Comandos</div><div class="legenda" style="margin:4px 0 12px">Cada comando pede confirmação e tem tempo limite de 1,5 s para a resposta.</div><div class="botoes"><button class="botao" style="--cor:${corT}" data-cmd="${a}" ${app.conectado?'':'disabled'}>${cap(a)}</button><button class="botao sec" style="--cor:var(--fraco)" data-cmd="${b}" ${app.conectado?'':'disabled'}>${cap(b)}</button></div>${!app.conectado?'<div class="legenda" style="color:var(--alerta);margin-top:8px">Comandos bloqueados: sem conexão com o broker.</div>':''}${tipo==='bomba'?'<div class="legenda" style="margin-top:8px">Intertravamento: a bomba só liga com a Válvula 1 aberta e desliga sozinha se ela fechar ou o Tanque 1 esvaziar.</div>':''}`; }
+  const cs=app.cmds.filter(c=>c.eq===id); $('#det-hist').hidden=!cs.length; $('#det-hist-lista').innerHTML=cs.slice(0,6).map(linhaCmd).join(''); }
+// ===== diagrama (Canvas) =====
+const cv=$('#diag'), cx=cv.getContext('2d'); let fase=0; const areas=[];
+const CSS=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function cor(c){ return c.startsWith('var(')?CSS(c.slice(4,-1)):c; }
+function desenharDiagrama(){ const W=cv.width,H=cv.height; cx.clearRect(0,0,W,H); fase=(fase+0.012)%1; areas.length=0;
+  const t1=[0.08*W,0.20*H,0.22*W,0.58*H], t2=[0.62*W,0.20*H,0.22*W,0.58*H]; const bomba=[0.40*W,0.90*H], v1=[0.54*W,0.90*H], v3=[0.11*W,0.11*H], v2=[0.92*W,0.55*H];
+  const rede=[[0.03*W,0.11*H],[0.19*W,0.11*H],[0.19*W,t1[1]]], cBomba=[[0.19*W,t1[1]+t1[3]],[0.19*W,0.90*H],[0.73*W,0.90*H],[0.73*W,t2[1]+t2[3]]], dreno=[[t2[0]+t2[2],0.55*H],[0.985*W,0.55*H],[0.985*W,0.97*H]];
+  const esp=W*0.018; cx.lineCap='round'; cx.lineJoin='round';
+  for(const c of [rede,cBomba,dreno]){ cx.strokeStyle=CSS('--s3'); cx.lineWidth=esp; cx.beginPath(); c.forEach((p,i)=>i?cx.lineTo(...p):cx.moveTo(...p)); cx.stroke(); }
+  if(app.viva){ if(planta.v[3].e==='aberta') fluxo(rede,esp); if(planta.bomba==='ligada'&&planta.v[1].e==='aberta') fluxo(cBomba,esp); if(planta.v[2].e==='aberta') fluxo(dreno,esp); }
+  tanque(t1,'Tanque 1',app.viva?leitura(1):null,'tanque/1'); tanque(t2,'Tanque 2',app.viva?leitura(2):null,'tanque/2');
+  valvula(v3,'V3',app.viva?planta.v[3].e:null,'valvula/3'); valvula(v1,'V1',app.viva?planta.v[1].e:null,'valvula/1'); valvula(v2,'V2',app.viva?planta.v[2].e:null,'valvula/2');
+  bombaDes(bomba,app.viva?planta.bomba:null);
+  texto('REDE',rede[0][0],rede[0][1]-W*0.04,CSS('--mfraco'),10,false); texto('DRENO',dreno[2][0]-W*0.015,dreno[2][1]-W*0.02,CSS('--mfraco'),10,false,false,'right');
+}
+function fluxo(p,esp){ const seg=[]; let tot=0; for(let i=1;i<p.length;i++){ const d=Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]); seg.push(d); tot+=d; } const passo=esp*4.5; cx.fillStyle=CSS('--tanque'); for(let d=(fase*passo)%passo; d<tot; d+=passo){ let r=d,pos=p[0]; for(let i=0;i<seg.length;i++){ if(r<=seg[i]){ const t=r/seg[i]; pos=[p[i][0]+(p[i+1][0]-p[i][0])*t,p[i][1]+(p[i+1][1]-p[i][1])*t]; break;} r-=seg[i]; } cx.beginPath(); cx.arc(pos[0],pos[1],esp*0.38,0,7); cx.fill(); } }
+function rr(x,y,w,h,r){ cx.beginPath(); cx.roundRect(x,y,w,h,r); }
+function tanque([x,y,w,h],nome,p,id){ areas.push([x,y,w,h,id]); rr(x,y,w,h,w*0.12); cx.fillStyle=CSS('--s2'); cx.fill();
+  if(p!=null){ const alt=h*p/100, topo=y+h-alt; const c=cor(corNivel(p)); cx.save(); rr(x,y,w,h,w*0.12); cx.clip(); cx.fillStyle=c+'38'; cx.fillRect(x,topo,w,alt); cx.fillStyle=c; cx.fillRect(x,topo,w,3); cx.restore(); rr(x,y,w,h,w*0.12); cx.strokeStyle=c; cx.lineWidth=2.5; cx.setLineDash([]); cx.stroke(); texto(fmt(p)+'%',x+w/2,y+h/2,CSS('--texto'),19,true); }
+  else { rr(x,y,w,h,w*0.12); cx.strokeStyle=CSS('--desc'); cx.lineWidth=2.5; cx.setLineDash([14,10]); cx.stroke(); cx.setLineDash([]); texto('?',x+w/2,y+h/2,CSS('--desc'),26,true); }
+  texto(nome,x+w/2,y+h*0.14,p!=null?CSS('--tanque'):CSS('--desc'),11,false,true); }
+function valvula([x,y],nome,e,id){ const r=cv.width*0.036; areas.push([x-r*1.8,y-r*1.8,r*3.6,r*3.6,id]); const c=cor(corValv(e)); const mov=e==='abrindo'||e==='fechando';
+  cx.fillStyle=CSS('--bg'); cx.beginPath(); cx.arc(x,y,r*1.35,0,7); cx.fill(); cx.globalAlpha=mov?0.5+0.5*Math.abs(Math.sin(fase*6.28)):1;
+  cx.beginPath(); cx.moveTo(x-r,y-r*0.8); cx.lineTo(x,y); cx.lineTo(x-r,y+r*0.8); cx.closePath(); cx.moveTo(x+r,y-r*0.8); cx.lineTo(x,y); cx.lineTo(x+r,y+r*0.8); cx.closePath();
+  if(e==='aberta'||mov){ cx.fillStyle=c; cx.fill(); } else { cx.strokeStyle=c; cx.lineWidth=2.5; cx.stroke(); }
+  cx.save(); cx.translate(x,y); cx.rotate(e==='aberta'?0:Math.PI/2); cx.strokeStyle=c; cx.lineWidth=3; cx.beginPath(); cx.moveTo(-r*0.9,-r*1.25); cx.lineTo(r*0.9,-r*1.25); cx.stroke(); cx.restore(); cx.globalAlpha=1;
+  if(e==null) texto('?',x,y,CSS('--desc'),12,true); texto(nome,x,y+r*1.9,c,10,false,true); }
+function bombaDes([x,y],e){ const r=cv.width*0.045; areas.push([x-r*1.6,y-r*1.6,r*3.2,r*3.2,'bomba/1']); const c=cor(corBomba(e)); cx.fillStyle=CSS('--bg'); cx.beginPath(); cx.arc(x,y,r*1.25,0,7); cx.fill();
+  cx.fillStyle=e==='ligada'?c+'2E':CSS('--s2'); cx.beginPath(); cx.arc(x,y,r,0,7); cx.fill(); cx.strokeStyle=c; cx.lineWidth=2.5; cx.stroke();
+  if(e==null) texto('?',x,y,CSS('--desc'),12,true); else { cx.save(); cx.translate(x,y); if(e==='ligada') cx.rotate(fase*6.28*1.5); cx.strokeStyle=c; cx.lineWidth=3; for(let i=0;i<3;i++){ cx.rotate(2.094); cx.beginPath(); cx.moveTo(0,0); cx.lineTo(0,-r*0.7); cx.stroke(); } cx.restore(); }
+  texto('BOMBA',x,y-r*2.1,c,10,false,true); }
+function texto(t,x,y,c,tam,neg,centro,alin){ const px=tam*2.1; cx.font=(neg?'700 ':'600 ')+px+'px '+(neg?'Sora':'Manrope')+', sans-serif'; cx.fillStyle=c; cx.textAlign=alin||((neg||centro)?'center':'left'); cx.textBaseline='middle'; cx.fillText(t,x,y); }
+cv.addEventListener('click',ev=>{ const r=cv.getBoundingClientRect(); const x=(ev.clientX-r.left)*cv.width/r.width, y=(ev.clientY-r.top)*cv.height/r.height; const a=areas.find(a=>x>=a[0]&&x<=a[0]+a[2]&&y>=a[1]&&y<=a[1]+a[3]); if(a) abrirDetalhe(a[4]); });
+// ===== gráfico =====
+function desenharGrafico(){ const g=$('#grafico'), c=g.getContext('2d'); const W=g.width,H=g.height; c.clearRect(0,0,W,H); const me=70,mi=40,mt=14,w=W-me,h=H-mi-mt; const agora=Date.now(), ini=agora-app.janela*60000;
+  const X=ts=>me+w*Math.max(0,Math.min(1,(ts-ini)/(agora-ini))), Y=p=>mt+h*(1-p/100); c.font='600 20px Manrope, sans-serif'; c.textBaseline='middle';
+  for(const p of [0,25,50,75,100]){ c.strokeStyle=CSS('--borda'); c.lineWidth=1; c.beginPath(); c.moveTo(me,Y(p)); c.lineTo(W,Y(p)); c.stroke(); c.fillStyle=CSS('--mfraco'); c.textAlign='left'; c.fillText(p,0,Y(p)); }
+  c.setLineDash([8,8]); c.strokeStyle=cor('var(--alerta)')+'99'; c.lineWidth=1.5; for(const l of [10,90]){ c.beginPath(); c.moveTo(me,Y(l)); c.lineTo(W,Y(l)); c.stroke(); } c.setLineDash([]);
+  c.textAlign='center'; for(let i=0;i<=4;i++){ const ts=ini+(agora-ini)*i/4; c.fillText(i===4?'agora':'-'+(app.janela*(4-i)/4)+' min',Math.min(W-40,Math.max(me+30,X(ts))),mt+h+22); }
+  for(const n of [1,2]){ const pts=app.hist[n].filter(p=>p.ts>=ini); if(!pts.length) continue; const col=n===1?CSS('--tanque'):CSS('--bomba'); c.strokeStyle=col; c.lineWidth=2.5; c.beginPath(); let ant=null; for(const p of pts){ if(!ant||p.ts-ant.ts>5000) c.moveTo(X(p.ts),Y(p.p)); else c.lineTo(X(p.ts),Y(p.p)); ant=p; } c.stroke(); const u=pts[pts.length-1]; if(app.viva&&agora-u.ts<5000){ c.fillStyle=col; c.beginPath(); c.arc(X(u.ts),Y(u.p),5,0,7); c.fill(); } } }
+// ===== navegação e eventos =====
+function irPara(aba){ app.aba=aba; document.querySelectorAll('.tela').forEach(t=>t.classList.remove('ativa')); $('#tela-'+(aba==='detalhe'?'detalhe':aba)).classList.add('ativa'); document.querySelectorAll('.aba').forEach(b=>b.classList.toggle('ativa',b.dataset.aba===(aba==='detalhe'?'equip':aba))); $('#moldura').scrollTop=0; window.scrollTo(0,0); render(); }
+function abrirDetalhe(id){ app.det=id; irPara('detalhe'); }
+document.addEventListener('click',ev=>{ const t=ev.target.closest('[data-aba],[data-det],[data-cmd],[data-rec],[data-f],[data-min]'); if(!t) return;
+  if(t.dataset.aba) irPara(t.dataset.aba); else if(t.dataset.det) abrirDetalhe(t.dataset.det);
+  else if(t.dataset.cmd){ const id=app.det, cmd=t.dataset.cmd, cap=cmd[0].toUpperCase()+cmd.slice(1); pedir(cap+' '+NOMES[id]+'?', DESCR[id]+'. O comando será enviado agora ao equipamento.', cap, t.style.getPropertyValue('--cor'), ()=>comandar(id,cmd)); }
+  else if(t.dataset.rec){ const a=app.alarmes.find(a=>a.id==t.dataset.rec); if(a) a.rec=true; render(); }
+  else if(t.dataset.f){ falha(t.dataset.f, t.dataset.a?+t.dataset.a:null); render(); }
+  else if(t.dataset.min){ app.janela=+t.dataset.min; document.querySelectorAll('#janelas .chip').forEach(c=>c.classList.toggle('sel',c===t)); render(); } });
+$('#voltar').onclick=()=>irPara('equip'); $('#rec-todos').onclick=()=>{ app.alarmes.forEach(a=>a.rec=true); render(); };
+function pedir(t,m,btn,c,acao){ $('#dlg-t').textContent=t; $('#dlg-m').textContent=m; $('#dlg-sim').textContent=btn; $('#dlg-sim').style.setProperty('--cor',c||'var(--tanque)'); app.pendente=acao; $('#dialogo').classList.add('aberto'); $('#dlg-sim').focus(); }
+$('#dlg-nao').onclick=()=>{ $('#dialogo').classList.remove('aberto'); app.pendente=null; }; $('#dlg-sim').onclick=()=>{ const a=app.pendente; $('#dialogo').classList.remove('aberto'); app.pendente=null; if(a) a(); render(); };
+let toastT; function toast(s){ const t=$('#toast'); t.textContent=s; t.classList.add('vis'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('vis'),2500); }
+diagLog('simulação iniciada'); render(); setInterval(passo,100);
+window.__supervilab={planta,app,comandar,falha};
+</script>

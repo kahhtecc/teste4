@@ -1,0 +1,2 @@
+-keep class br.com.supervilab.core.** { *; }
+-dontwarn org.slf4j.**

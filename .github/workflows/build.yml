@@ -1,0 +1,125 @@
+name: build
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  testes:
+    name: Testes do simulador e do núcleo
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Testes do simulador (Python)
+        run: |
+          pip install -r simulador/requirements.txt
+          cd simulador && python -m pytest tests -q
+      - name: Testes da lógica do firmware (g++)
+        run: cd firmware/teste_nativo && g++ -std=c++17 -Wall -I../src teste_logica.cpp -o teste && ./teste
+      - name: Testes do núcleo Kotlin contra broker real
+        run: |
+          curl -sSL -o k.zip https://github.com/JetBrains/kotlin/releases/download/v2.1.0/kotlin-compiler-2.1.0.zip
+          unzip -q k.zip -d /opt && KOTLINC=/opt/kotlinc bash android/testes-jvm/run.sh | tee testes-jvm.log
+          grep -q "0 falharam" testes-jvm.log
+
+  apk:
+    name: APK
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with: { distribution: temurin, java-version: "17" }
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Compilar
+        working-directory: android
+        run: |
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug assembleRelease 2>&1 | tee build.log
+          test ${PIPESTATUS[0]} -eq 0
+      - name: Erros de compilação (legíveis via gh run view)
+        if: failure()
+        working-directory: android
+        run: grep -E "^e: |error:|FAILURE|What went wrong" -A3 build.log | head -80 | sed 's/^/::error::/' || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: |
+            android/app/build/outputs/apk/release/app-release.apk
+            android/app/build/outputs/apk/debug/app-debug.apk
+
+  firmware:
+    name: Firmware ESP32
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Compilar com PlatformIO
+        working-directory: firmware
+        run: |
+          pip install platformio
+          cp include/config.h.example include/config.h
+          pio run 2>&1 | tee pio.log
+          test ${PIPESTATUS[0]} -eq 0
+          cp .pio/build/esp32dev/firmware.bin supervilab-esp32.bin
+      - uses: actions/upload-artifact@v4
+        with: { name: firmware, path: firmware/supervilab-esp32.bin }
+
+  capturas:
+    name: Emulador e capturas
+    needs: apk
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with: { name: apk, path: apk }
+      - name: Habilitar KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        continue-on-error: true
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: bash .github/scripts/screens.sh apk/release/app-release.apk shots
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: capturas, path: shots, if-no-files-found: ignore }
+
+  release:
+    name: Release
+    needs: [apk, firmware, capturas, testes]
+    if: always() && needs.apk.result == 'success'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: art }
+      - name: Montar arquivos
+        run: |
+          mkdir out
+          cp art/apk/release/app-release.apk out/SuperviLab-${{ github.run_number }}.apk
+          cp art/apk/debug/app-debug.apk out/SuperviLab-${{ github.run_number }}-debug.apk || true
+          cp art/firmware/supervilab-esp32.bin out/ 2>/dev/null || true
+          if [ -d art/capturas ]; then (cd art/capturas && zip -r ../../out/capturas.zip . ) ; find art/capturas -type f -size +0 -name "*.png" -exec cp {} out/ \; ; fi
+          ls -la out
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: SuperviLab build ${{ github.run_number }}
+          body: |
+            APK assinado com chave de depuração (instale permitindo fontes desconhecidas).
+            Testes: simulador ${{ needs.testes.result }}, firmware ${{ needs.firmware.result }}, capturas ${{ needs.capturas.result }}.
+          files: out/*

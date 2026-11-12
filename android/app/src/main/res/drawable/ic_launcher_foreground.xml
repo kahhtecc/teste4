@@ -1,0 +1,13 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- tanque -->
+    <path android:fillColor="#1C2A3A" android:pathData="M30,34 h30 a6,6 0 0 1 6,6 v34 a6,6 0 0 1 -6,6 h-30 a6,6 0 0 1 -6,-6 v-34 a6,6 0 0 1 6,-6 z"/>
+    <path android:fillColor="#2DD4BF" android:pathData="M26,56 h38 v18 a6,6 0 0 1 -6,6 h-26 a6,6 0 0 1 -6,-6 z"/>
+    <path android:fillColor="#5EEAD4" android:pathData="M26,56 q6,-3 12,0 t12,0 t14,0 v4 q-6,3 -12,0 t-12,0 t-14,0 z"/>
+    <!-- tubo -->
+    <path android:strokeColor="#94A3B8" android:strokeWidth="5" android:strokeLineCap="round" android:fillColor="#00000000" android:pathData="M66,50 h12 v-20 h8"/>
+    <!-- válvula âmbar -->
+    <path android:fillColor="#F59E0B" android:pathData="M72,22 l10,6 l-10,6 z M94,22 l-10,6 l10,6 z"/>
+    <path android:fillColor="#F59E0B" android:pathData="M81,18 h4 v6 h-4 z"/>
+</vector>
