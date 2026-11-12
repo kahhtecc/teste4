@@ -12,12 +12,14 @@ App Android de supervisão/controle de automação (3 válvulas, 1 bomba, 2 tanq
 | 3 | App Android: lógica pura (core) + testes com kotlinc | concluída (27 testes JVM passam, 3 execuções estáveis: `android/testes-jvm/run.sh`) |
 | 4 | App Android: UI Compose (tema, telas, demo) | escrita; falta compilar no GitHub Actions e revisar capturas |
 | 5 | Firmware ESP32 + esquema + BOM | concluída (lógica pura: 41 verificações passam com g++; main.cpp compila só no GitHub Actions, PlatformIO bloqueado aqui) |
-| 6 | Repositório GitHub + Actions (APK, emulador, capturas, Release) | pendente |
-| 7 | Versão web de simulação (artifact) | pendente |
-| 8 | Zip + README + verificação final + relatório | pendente |
+| 6 | Repositório GitHub + Actions (APK, emulador, capturas, Release) | workflow escrito e commit local pronto; PUSH BLOQUEADO: add_repo com push em kahhtecc/teste4 (vazio) foi negado pelo classificador; precisa da aprovação do Kaique |
+| 7 | Versão web de simulação (artifact) | concluída: https://claude.ai/artifact/XMm8Yq5RmifX6JCrmf7eGu |
+| 8 | Zip + README + verificação final + relatório | concluída (SuperviLab-projeto.zip, relatório entregue) |
 
 ## Próximo passo
-Etapa 6: repositório GitHub (verificar se kahhtecc/teste4, teste-2 ou teste está vazio; usar add_repo com push) + workflow .github/workflows/build.yml (APK, firmware PlatformIO, emulador com capturas, Release). Em paralelo etapa 7 (web) e 8 (zip/README). UI já escrita em android/app (MainActivity, SuperviLabApp, ui/*, ui/telas/*), não compilada aqui (SDK bloqueado).
+Só falta o push: quando o Kaique aprovar add_repo(kahhtecc/teste4, push), rodar `cd /home/user/supervilab && git push -u origin main`, acompanhar o workflow, baixar APK e capturas da Release, olhar as capturas e corrigir a UI se preciso.
+
+(Histórico) Etapa 6: repositório GitHub (verificar se kahhtecc/teste4, teste-2 ou teste está vazio; usar add_repo com push) + workflow .github/workflows/build.yml (APK, firmware PlatformIO, emulador com capturas, Release). Em paralelo etapa 7 (web) e 8 (zip/README). UI já escrita em android/app (MainActivity, SuperviLabApp, ui/*, ui/telas/*), não compilada aqui (SDK bloqueado).
 
 Concluído na etapa 4: UI Compose em android/app (tema escuro próprio, fontes Sora/Manrope já em res/font, telas: Painel, Equipamentos/detalhe, Alarmes, Histórico, Ajustes; MainActivity com extras demo/screen). Depois: etapa 5 firmware, etapa 6 repo GitHub (precisa de repositório: ver kahhtecc/teste4 etc. via add_repo, confirmar vazio antes de usar).
 
