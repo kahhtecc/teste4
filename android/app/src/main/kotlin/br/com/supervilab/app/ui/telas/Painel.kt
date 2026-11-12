@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import br.com.supervilab.app.ui.*
 import br.com.supervilab.core.*
 
@@ -42,7 +43,7 @@ fun TelaPainel(st: EstadoUI, store: PlantaStore, aoAbrir: (Equipamento) -> Unit,
                 val n = st.alarmesAtivos.size
                 Cartao(Modifier.weight(1f), cor = Cores.Alerta, ativo = n > 0, aoClicar = aoAbrirAlarmes, descricao = "Alarmes ativos") {
                     Rotulo("Alarmes"); Espaco(6)
-                    Text("$n", style = Tipo.Numero.copy(color = if (n > 0) Cores.Alerta else Cores.Ok)); Text(if (n == 1) "ativo" else "ativos", style = Tipo.Legenda)
+                    Text("$n", style = Tipo.Numero.copy(color = if (n > 0) Cores.Alerta else Cores.Ok, fontSize = 24.sp, lineHeight = 30.sp)); Text(if (n == 1) "ativo" else "ativos", style = Tipo.Legenda)
                 }
             }
         }
@@ -99,8 +100,8 @@ fun FaixaEstado(st: EstadoUI) {
 private fun Indicador(nome: String, pct: Double?, eq: Equipamento, modifier: Modifier, aoClicar: () -> Unit) {
     Cartao(modifier, cor = Cores.Tanque, ativo = pct != null, aoClicar = aoClicar, descricao = nome) {
         Rotulo(nome); Espaco(6)
-        Text(if (pct == null) "?" else "${PlantaStore.fmt(pct)}%", style = Tipo.Numero.copy(color = corNivel(pct)))
-        Text(if (pct == null) DESCONHECIDO else "${(pct * 10).toInt()} L", style = Tipo.Legenda)
+        Text(if (pct == null) "?" else "${PlantaStore.fmt(pct)}%", style = Tipo.Numero.copy(color = corNivel(pct), fontSize = 24.sp, lineHeight = 30.sp), maxLines = 1, softWrap = false)
+        Text(if (pct == null) DESCONHECIDO else "${(pct * 10).toInt()} L", style = Tipo.Legenda, maxLines = 1)
     }
 }
 

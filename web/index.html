@@ -273,7 +273,7 @@ const cv=$('#diag'), cx=cv.getContext('2d'); let fase=0; const areas=[];
 const CSS=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 function cor(c){ return c.startsWith('var(')?CSS(c.slice(4,-1)):c; }
 function desenharDiagrama(){ const W=cv.width,H=cv.height; cx.clearRect(0,0,W,H); fase=(fase+0.012)%1; areas.length=0;
-  const t1=[0.08*W,0.20*H,0.22*W,0.58*H], t2=[0.62*W,0.20*H,0.22*W,0.58*H]; const bomba=[0.40*W,0.90*H], v1=[0.54*W,0.90*H], v3=[0.11*W,0.11*H], v2=[0.92*W,0.55*H];
+  const t1=[0.08*W,0.20*H,0.22*W,0.58*H], t2=[0.62*W,0.20*H,0.22*W,0.58*H]; const bomba=[0.40*W,0.90*H], v1=[0.54*W,0.90*H], v3=[0.14*W,0.11*H], v2=[0.92*W,0.55*H];
   const rede=[[0.03*W,0.11*H],[0.19*W,0.11*H],[0.19*W,t1[1]]], cBomba=[[0.19*W,t1[1]+t1[3]],[0.19*W,0.90*H],[0.73*W,0.90*H],[0.73*W,t2[1]+t2[3]]], dreno=[[t2[0]+t2[2],0.55*H],[0.985*W,0.55*H],[0.985*W,0.97*H]];
   const esp=W*0.018; cx.lineCap='round'; cx.lineJoin='round';
   for(const c of [rede,cBomba,dreno]){ cx.strokeStyle=CSS('--s3'); cx.lineWidth=esp; cx.beginPath(); c.forEach((p,i)=>i?cx.lineTo(...p):cx.moveTo(...p)); cx.stroke(); }

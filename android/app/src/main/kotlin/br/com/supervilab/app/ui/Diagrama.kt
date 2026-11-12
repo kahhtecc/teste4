@@ -94,7 +94,7 @@ private class Esquema(w: Float, h: Float) {
     val t2 = Rect(0.62f * w, 0.20f * h, 0.84f * w, 0.78f * h)
     val bomba = Offset(0.40f * w, 0.90f * h)
     val v1 = Offset(0.54f * w, 0.90f * h)
-    val v3 = Offset(0.11f * w, 0.11f * h)
+    val v3 = Offset(0.14f * w, 0.11f * h)
     val v2 = Offset(0.92f * w, 0.55f * h)
     val raio = 0.045f * w
     val caminhoRede = listOf(Offset(0.03f * w, 0.11f * h), Offset(0.19f * w, 0.11f * h), Offset(0.19f * w, t1.top))

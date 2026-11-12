@@ -49,6 +49,7 @@ sleep 3.5; adb exec-out screencap -p > "$OUT/12-aberta.png"
 tocar "Voltar"; sleep 1; adb exec-out screencap -p > "$OUT/13-equipamentos-apos.png"
 tocar "Aba Painel"; sleep 1.5; adb exec-out screencap -p > "$OUT/14-painel-apos.png"
 # simular queda de rede e ver o painel em DESCONHECIDO
-tocar "Aba Ajustes"; sleep 1; tocar "Falha: Queda de rede 10 s"; sleep 0.5; tocar "Aba Painel"; sleep 1.5; adb exec-out screencap -p > "$OUT/15-painel-desconhecido.png"
+ESPERA=4 abrir 15-painel-desconhecido --es screen painel --es cenario queda
+ESPERA=4 abrir 16-equipamentos-desconhecido --es screen equipamentos --es cenario queda
 adb logcat -d -s AndroidRuntime:E > "$OUT/logcat-erros.txt" || true
 ls -la "$OUT"

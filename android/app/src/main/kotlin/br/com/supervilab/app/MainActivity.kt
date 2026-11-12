@@ -83,6 +83,7 @@ fun Raiz(store: PlantaStore, telaInicial: String?, cenario: String?, versao: Str
             store.comandar(Equipamento.V3, "abrir")
             store.simularFalha("sensor_travado", "tanque/1", true)
         }
+        if (cenario == "queda") { delay(1500); store.simularFalha("perda_conexao", null, true, 20) }
     }
     Box(Modifier.fillMaxSize().background(Cores.Fundo)) {
         Box(Modifier.fillMaxSize().statusBarsPadding()) {
