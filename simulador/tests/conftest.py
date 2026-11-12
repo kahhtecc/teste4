@@ -1,11 +1,19 @@
-import asyncio, os, sys, threading, time, socket, json
+import asyncio
+import json
+import os
+import socket
+import sys
+import threading
+import time
+
 import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+import paho.mqtt.client as mqtt
 from amqtt.broker import Broker
+
 from broker import config_broker
 from mqtt_sim import Simulador
-import paho.mqtt.client as mqtt
 
 
 def porta_livre():

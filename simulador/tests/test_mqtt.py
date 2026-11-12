@@ -1,12 +1,14 @@
-import time, json, uuid
-import paho.mqtt.client as mqtt
+import time
+import uuid
+
 from conftest import Espiao
+
 from mqtt_sim import Simulador
 
 
 def cmd(espiao, topico, c):
     cid = uuid.uuid4().hex
-    t0 = espiao.pub(topico + "/cmd", {"cmd": c, "id": cid, "ts": int(t0 * 1000) if False else 0})
+    t0 = espiao.pub(topico + "/cmd", {"cmd": c, "id": cid, "ts": 0})
     return cid, t0
 
 

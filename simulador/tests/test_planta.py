@@ -1,6 +1,17 @@
-import sys, os
+import os
+import sys
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from planta import Planta, Valvula, ABERTA, FECHADA, ABRINDO, FECHANDO, LIGADA, DESLIGADA, CURSO_VALVULA_S
+from planta import (
+    ABERTA,
+    ABRINDO,
+    CURSO_VALVULA_S,
+    DESLIGADA,
+    FECHADA,
+    FECHANDO,
+    Planta,
+    Valvula,
+)
 
 
 def avancar(p, segundos, dt=0.1):

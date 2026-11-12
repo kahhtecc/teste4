@@ -15,7 +15,7 @@ import uuid
 
 import paho.mqtt.client as mqtt
 
-from planta import Planta, LIGADA
+from planta import Planta
 
 log = logging.getLogger("sim")
 PASSO_S = 0.1
