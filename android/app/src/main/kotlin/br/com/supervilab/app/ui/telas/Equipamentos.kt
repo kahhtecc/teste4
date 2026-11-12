@@ -83,9 +83,10 @@ fun TelaDetalhe(eq: Equipamento, st: EstadoUI, store: PlantaStore, aoVoltar: () 
                 when (eq.tipo) {
                     TipoEquipamento.TANQUE -> {
                         val n = vis.tanques[eq.numero]
-                        Text(if (n?.pct == null) "?" else "${PlantaStore.fmt(n.pct)}%", style = Tipo.Numero.copy(color = corNivel(n?.pct)))
-                        Text(if (n?.pct == null) DESCONHECIDO else "${(n.pct * 10).toInt()} L de 1000 L · ${n.qualidade.rotulo}", style = Tipo.CorpoFraco)
-                        Espaco(10); BarraNivel(n?.pct)
+                        val pct = n?.pct
+                        Text(if (pct == null) "?" else "${PlantaStore.fmt(pct)}%", style = Tipo.Numero.copy(color = corNivel(pct)))
+                        Text(if (pct == null || n == null) DESCONHECIDO else "${(pct * 10).toInt()} L de 1000 L · ${n.qualidade.rotulo}", style = Tipo.CorpoFraco)
+                        Espaco(10); BarraNivel(pct)
                     }
                     TipoEquipamento.VALVULA -> {
                         val v = vis.valvulas[eq.numero]
