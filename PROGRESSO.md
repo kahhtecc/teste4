@@ -12,12 +12,12 @@ App Android de supervisão/controle de automação (3 válvulas, 1 bomba, 2 tanq
 | 3 | App Android: lógica pura (core) + testes com kotlinc | concluída (27 testes JVM passam, 3 execuções estáveis: `android/testes-jvm/run.sh`) |
 | 4 | App Android: UI Compose (tema, telas, demo) | escrita; falta compilar no GitHub Actions e revisar capturas |
 | 5 | Firmware ESP32 + esquema + BOM | concluída (lógica pura: 41 verificações passam com g++; main.cpp compila só no GitHub Actions, PlatformIO bloqueado aqui) |
-| 6 | Repositório GitHub + Actions (APK, emulador, capturas, Release) | concluída: repositório https://github.com/kahhtecc/teste4, Release build-3 com APK/firmware/capturas; build-4 em andamento com ajustes visuais |
+| 6 | Repositório GitHub + Actions (APK, emulador, capturas, Release) | concluída: repositório https://github.com/kahhtecc/teste4, Release build-3 com APK/firmware/capturas; build-4 revisada e entregue (capturas OK) |
 | 7 | Versão web de simulação (artifact) | concluída: https://claude.ai/artifact/XMm8Yq5RmifX6JCrmf7eGu |
 | 8 | Zip + README + verificação final + relatório | concluída (SuperviLab-projeto.zip, relatório entregue) |
 
 ## Próximo passo
-Aguardar o build mais recente, baixar capturas, conferir e entregar o APK final.
+Tudo concluído.
 
 (Histórico) Etapa 6: repositório GitHub (verificar se kahhtecc/teste4, teste-2 ou teste está vazio; usar add_repo com push) + workflow .github/workflows/build.yml (APK, firmware PlatformIO, emulador com capturas, Release). Em paralelo etapa 7 (web) e 8 (zip/README). UI já escrita em android/app (MainActivity, SuperviLabApp, ui/*, ui/telas/*), não compilada aqui (SDK bloqueado).
 
