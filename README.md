@@ -20,7 +20,8 @@ web/              simulação web (um único HTML)
 ```
 
 ## Opção 1: GitHub (APK pronto)
-1. Crie um repositório, envie estes arquivos (`git push`) e aguarde o workflow **build**.
+Repositório: https://github.com/kahhtecc/teste4 (Releases: https://github.com/kahhtecc/teste4/releases)
+1. Para um repositório novo: envie estes arquivos (`git push`) e aguarde o workflow **build**.
 2. Em **Releases** aparece `build-N` com o APK, o `.bin` do ESP32 e as capturas do emulador.
 3. No celular: baixe o APK, permita "fontes desconhecidas" e instale. O app abre em **modo demo**.
 
